@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Autentificare{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto mt-12 bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+  <h1 class="text-xl font-semibold mb-1">Autentificare</h1>
+  <p class="text-sm text-slate-500 mb-6">Intra in contul tau de administrare.</p>
+  <form method="post" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">Email</label>
+      <input name="email" type="email" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Parola</label>
+      <input name="password" type="password" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+    </div>
+    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white rounded-md py-2 text-sm font-medium transition">Intra in cont</button>
+  </form>
+  <p class="text-sm text-slate-500 mt-4 text-center">Nu ai cont? <a href="{{ url_for('register') }}" class="text-brand-600 font-medium">Creeaza unul</a></p>
+</div>
+{% endblock %}

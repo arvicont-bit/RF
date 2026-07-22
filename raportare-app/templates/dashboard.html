@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Firme client{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-semibold">Firme client</h1>
+  <a href="{{ url_for('new_client') }}" class="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium transition">+ Firma noua</a>
+</div>
+
+{% if not clients %}
+<div class="bg-white rounded-xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
+  Nicio firma adaugata inca. <a href="{{ url_for('new_client') }}" class="text-brand-600 font-medium">Adauga prima firma client</a>.
+</div>
+{% else %}
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  {% for c in clients %}
+  <a href="{{ url_for('client_detail', client_id=c['id']) }}" class="block bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md hover:border-brand-300 transition">
+    <div class="flex items-start justify-between">
+      <h2 class="font-semibold text-slate-800">{{ c['name'] }}</h2>
+      <span class="text-xs px-2 py-0.5 rounded-full
+        {% if c['plan'] == 'pro' %}bg-violet-100 text-violet-700
+        {% elif c['plan'] == 'basic' %}bg-brand-100 text-brand-700
+        {% else %}bg-slate-100 text-slate-600{% endif %}">
+        {{ (c['plan'] or 'trial')|capitalize }}
+      </span>
+    </div>
+    {% if c['cui'] %}<p class="text-xs text-slate-400 mt-0.5">CUI {{ c['cui'] }}</p>{% endif %}
+    <p class="text-sm text-slate-500 mt-3">{{ c['nr_balante'] }} balante incarcate</p>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

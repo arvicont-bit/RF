@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Firma noua{% endblock %}
+{% block content %}
+<div class="max-w-md bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+  <h1 class="text-xl font-semibold mb-1">Firma client noua</h1>
+  <p class="text-sm text-slate-500 mb-6">Fiecare firma are datele complet separate (balante, mapari, abonament).</p>
+  <form method="post" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">Nume firma</label>
+      <input name="name" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="ex. Toto SRL">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">CUI (optional)</label>
+      <input name="cui" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Plan abonament</label>
+      <select name="plan" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        {% for key, p in planuri.items() %}
+        <option value="{{ key }}">{{ p['nume'] }} — {{ '%.2f'|format(p['pret']/100) }} RON/luna</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white rounded-md py-2 text-sm font-medium transition">Adauga firma</button>
+  </form>
+</div>
+{% endblock %}

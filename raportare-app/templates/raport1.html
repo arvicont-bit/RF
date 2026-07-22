@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Raport 1 — {{ client['name'] }}{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <a href="{{ url_for('client_detail', client_id=client['id']) }}" class="text-sm text-brand-600">&larr; {{ client['name'] }}</a>
+  <h1 class="text-xl font-semibold mt-1">Raport 1 — P&L / Bilant / Capital de lucru</h1>
+  <p class="text-sm text-slate-500">{{ luni_ro[upload['month']] }} {{ upload['year'] }} · sursa: {{ upload['original_filename'] }}</p>
+</div>
+
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white rounded-xl border border-slate-200 p-4">
+    <p class="text-xs text-slate-400 uppercase mb-1">BS check</p>
+    <p class="text-lg font-semibold num {{ 'text-emerald-600' if checks['bs_check']|abs < 1 else 'text-red-600' }}">{{ '%.2f'|format(checks['bs_check']) }}</p>
+  </div>
+  <div class="bg-white rounded-xl border border-slate-200 p-4">
+    <p class="text-xs text-slate-400 uppercase mb-1">P&L cumulat</p>
+    <p class="text-lg font-semibold num">{{ '%.2f'|format(checks['pl_cumulat']) }}</p>
+  </div>
+  <div class="bg-white rounded-xl border border-slate-200 p-4">
+    <p class="text-xs text-slate-400 uppercase mb-1">#121 cumulat</p>
+    <p class="text-lg font-semibold num">{{ '%.2f'|format(checks['cont121_cumulat']) }}</p>
+  </div>
+  <div class="bg-white rounded-xl border border-slate-200 p-4">
+    <p class="text-xs text-slate-400 uppercase mb-1">Check cumulat / luna</p>
+    <p class="text-lg font-semibold num {{ 'text-emerald-600' if checks['is_balanced'] else 'text-red-600' }}">
+      {{ '%.2f'|format(checks['check_cumulat']) }} / {{ '%.2f'|format(checks['check_luna']) }}
+    </p>
+  </div>
+</div>
+
+{% if not checks['is_balanced'] %}
+<div class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg px-4 py-3 mb-8">
+  Balanta nu este echilibrata inca. Verificati conturile nemapate sau conturile cu tratament special (CONTRA/AUTO-INCHIS) de mai jos.
+</div>
+{% endif %}
+
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-4 py-3 border-b border-slate-100 font-semibold text-sm">Profit &amp; Loss (pe cod de mapare)</div>
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+        <tr><th class="text-left px-4 py-2">Cod</th><th class="text-left px-4 py-2">Descriere</th><th class="text-right px-4 py-2">Cumulat</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for r in pl_rows %}
+        <tr>
+          <td class="px-4 py-1.5 text-xs text-slate-400">{{ r['cod_mapare'] or '—' }}</td>
+          <td class="px-4 py-1.5">{{ r['descriere_cod'] or 'Nemapat' }}</td>
+          <td class="px-4 py-1.5 text-right num">{{ '%.2f'|format(r['cumulat']) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-4 py-3 border-b border-slate-100 font-semibold text-sm">Bilant (solduri finale pe cont)</div>
+    <table class="w-full text-sm max-h-96 overflow-y-auto block">
+      <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+        <tr><th class="text-left px-4 py-2">Cont</th><th class="text-left px-4 py-2">Denumire</th><th class="text-right px-4 py-2">Sold final</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for r in bs_rows %}
+        <tr>
+          <td class="px-4 py-1.5 text-xs text-slate-400">{{ r['cont'] }}</td>
+          <td class="px-4 py-1.5">{{ r['denumire'] }}</td>
+          <td class="px-4 py-1.5 text-right num">{{ '%.2f'|format(r['sold_final']) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+  <div class="px-4 py-3 border-b border-slate-100 font-semibold text-sm">Trial Balance — detaliu complet (format universal)</div>
+  <div class="overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+      <tr>
+        <th class="text-left px-4 py-2">Tip</th><th class="text-left px-4 py-2">Cont</th><th class="text-left px-4 py-2">Denumire</th>
+        <th class="text-left px-4 py-2">Cod mapare</th><th class="text-left px-4 py-2">Tratament</th>
+        <th class="text-right px-4 py-2">Rulaj cumulat mapat</th><th class="text-right px-4 py-2">Sursa</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for r in mapped_lines %}
+      <tr class="{{ 'bg-amber-50' if r['tratament_special'] else '' }}">
+        <td class="px-4 py-1 text-xs">{{ r['tip'] }}</td>
+        <td class="px-4 py-1 text-xs text-slate-500">{{ r['cont'] }}</td>
+        <td class="px-4 py-1">{{ r['denumire'] }}</td>
+        <td class="px-4 py-1 text-xs">{{ r['cod_mapare'] or '⚠ nemapat' }}</td>
+        <td class="px-4 py-1 text-xs">{{ r['tratament_special'] or '' }}</td>
+        <td class="px-4 py-1 text-right num">{{ '%.2f'|format(r['rulaj_cumulat_mapat']) if r['rulaj_cumulat_mapat'] is not none else '' }}</td>
+        <td class="px-4 py-1 text-xs text-slate-400">{{ r['sursa_mapare'] or '' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<p class="text-xs text-slate-400 mt-4">Cash Flow: se calculeaza din variatia soldurilor Bilant intre doua perioade consecutive — disponibil automat dupa incarcarea a cel putin doua luni pentru aceasta firma.</p>
+{% endblock %}

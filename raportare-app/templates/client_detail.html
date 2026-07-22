@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ client['name'] }}{% endblock %}
+{% block content %}
+<div class="flex items-start justify-between mb-6">
+  <div>
+    <a href="{{ url_for('dashboard') }}" class="text-sm text-brand-600">&larr; Toate firmele</a>
+    <h1 class="text-xl font-semibold mt-1">{{ client['name'] }}</h1>
+    {% if client['cui'] %}<p class="text-xs text-slate-400">CUI {{ client['cui'] }}</p>{% endif %}
+  </div>
+  <a href="{{ url_for('subscription', client_id=client['id']) }}" class="text-sm px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50">
+    Abonament: <span class="font-medium">{{ (subscription['plan'] if subscription else 'trial')|capitalize }}</span>
+  </a>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-1 bg-white rounded-xl border border-slate-200 p-5 h-fit">
+    <h2 class="font-semibold mb-3 text-sm text-slate-700">Incarca balanta noua</h2>
+    <form method="post" enctype="multipart/form-data" action="{{ url_for('upload_balance', client_id=client['id']) }}" class="space-y-3">
+      <div class="grid grid-cols-2 gap-2">
+        <select name="month" class="rounded-md border border-slate-300 px-2 py-2 text-sm">
+          {% for i in range(1, 13) %}
+          <option value="{{ i }}" {% if i == current_year and false %}selected{% endif %}>{{ luni_ro[i] }}</option>
+          {% endfor %}
+        </select>
+        <input name="year" type="number" value="{{ current_year }}" min="2000" max="2100" class="rounded-md border border-slate-300 px-2 py-2 text-sm">
+      </div>
+      <input type="file" name="balance_file" accept=".xlsx,.xls" required class="w-full text-sm">
+      <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white rounded-md py-2 text-sm font-medium transition">Incarca si proceseaza</button>
+    </form>
+    <p class="text-xs text-slate-400 mt-3">Fisierul original este atasat in baza de date, per firma / luna / an.</p>
+  </div>
+
+  <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+        <tr>
+          <th class="text-left px-4 py-2.5">Perioada</th>
+          <th class="text-left px-4 py-2.5">Fisier</th>
+          <th class="text-left px-4 py-2.5">Status</th>
+          <th class="text-right px-4 py-2.5">Check cumulat</th>
+          <th class="text-right px-4 py-2.5">Rapoarte</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for u in uploads %}
+        <tr>
+          <td class="px-4 py-2.5 whitespace-nowrap">{{ luni_ro[u['month']] }} {{ u['year'] }}</td>
+          <td class="px-4 py-2.5">
+            <a href="{{ url_for('download_upload', client_id=client['id'], upload_id=u['id']) }}" class="text-brand-600 hover:underline">{{ u['original_filename'] }}</a>
+          </td>
+          <td class="px-4 py-2.5">
+            {% if u['status'] == 'error' %}
+              <span class="text-red-600 text-xs" title="{{ u['error_message'] }}">Eroare</span>
+            {% elif u['is_balanced'] %}
+              <span class="text-emerald-600 text-xs">Echilibrata</span>
+            {% elif u['status'] == 'processed' %}
+              <span class="text-amber-600 text-xs" title="{{ u['error_message'] }}">Neechilibrata</span>
+            {% else %}
+              <span class="text-slate-400 text-xs">In asteptare</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-2.5 text-right num">{{ '%.2f'|format(u['check_cumulat']) if u['check_cumulat'] is not none else '-' }}</td>
+          <td class="px-4 py-2.5 text-right whitespace-nowrap">
+            {% if u['status'] == 'processed' %}
+            <a href="{{ url_for('raport1', client_id=client['id'], upload_id=u['id']) }}" class="text-brand-600 text-xs hover:underline">Raport 1</a> ·
+            <a href="{{ url_for('raport2', client_id=client['id'], upload_id=u['id']) }}" class="text-brand-600 text-xs hover:underline">Raport 2</a> ·
+            <a href="{{ url_for('raport3', client_id=client['id'], upload_id=u['id']) }}" class="text-brand-600 text-xs hover:underline">Raport 3</a>
+            {% else %}
+            <a href="{{ url_for('reprocess_upload', client_id=client['id'], upload_id=u['id']) }}" class="text-slate-400 text-xs hover:underline">Reproceseaza</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">Nicio balanta incarcata inca.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

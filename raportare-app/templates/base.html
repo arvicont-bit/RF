@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Raportare Financiara{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+  {% if session.get('user_id') %}
+  <nav class="bg-brand-700 text-white">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="{{ url_for('dashboard') }}" class="font-semibold text-lg">Raportare Financiara</a>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-brand-100">{{ user_email }}</span>
+        <a href="{{ url_for('logout') }}" class="bg-brand-600 hover:bg-brand-500 px-3 py-1.5 rounded-md transition">Delogare</a>
+      </div>
+    </div>
+  </nav>
+  {% endif %}
+
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+        {% for category, message in messages %}
+          <div class="px-4 py-2.5 rounded-md text-sm border
+            {% if category == 'error' %}bg-red-50 text-red-700 border-red-200
+            {% elif category == 'warning' %}bg-amber-50 text-amber-800 border-amber-200
+            {% else %}bg-emerald-50 text-emerald-700 border-emerald-200{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="text-center text-xs text-slate-400 py-4">
+    Raportare Financiara &middot; format universal &middot; multi-client
+  </footer>
+</body>
+</html>

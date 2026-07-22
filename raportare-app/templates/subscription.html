@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Abonament — {{ client['name'] }}{% endblock %}
+{% block content %}
+<div class="max-w-md">
+  <a href="{{ url_for('client_detail', client_id=client['id']) }}" class="text-sm text-brand-600">&larr; {{ client['name'] }}</a>
+  <h1 class="text-xl font-semibold mt-1 mb-6">Abonament — {{ client['name'] }}</h1>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <form method="post" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Plan</label>
+        <select name="plan" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+          {% for key, p in planuri.items() %}
+          <option value="{{ key }}" {% if subscription and subscription['plan'] == key %}selected{% endif %}>
+            {{ p['nume'] }} — {{ '%.2f'|format(p['pret']/100) }} RON/luna
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="text-xs text-slate-400">
+        Status curent: <span class="font-medium text-slate-600">{{ subscription['status'] if subscription else 'trial' }}</span><br>
+        Facturare (Stripe): neconectata inca — infrastructura este pregatita (stripe_customer_id / stripe_subscription_id in baza de date), se activeaza cand decideti modelul final de pricing.
+      </div>
+      <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white rounded-md py-2 text-sm font-medium transition">Salveaza</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Raport 3 — {{ client['name'] }}{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <a href="{{ url_for('client_detail', client_id=client['id']) }}" class="text-sm text-brand-600">&larr; {{ client['name'] }}</a>
+  <h1 class="text-xl font-semibold mt-1">Raport 3 — Dashboard grafic</h1>
+  <p class="text-sm text-slate-500">{{ luni_ro[upload['month']] }} {{ upload['year'] }}</p>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6">
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <h2 class="font-semibold text-sm mb-3">Venituri vs. Cheltuieli (cumulat, pe luni incarcate)</h2>
+    <div id="chartVenCheltuieli"></div>
+  </div>
+  <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <h2 class="font-semibold text-sm mb-3">Profit cumulat (pe luni incarcate)</h2>
+    <div id="chartProfit"></div>
+  </div>
+  <div class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2">
+    <h2 class="font-semibold text-sm mb-3">Structura Bilant (sold final, pe categorie de mapare)</h2>
+    <div id="chartBS"></div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='charts.js') }}"></script>
+<script>
+fetch("{{ url_for('raport3_data', client_id=client['id'], upload_id=upload['id']) }}")
+  .then(r => r.json())
+  .then(data => {
+    const labels = data.series.map(s => s.perioada);
+
+    renderGroupedBarChart('chartVenCheltuieli', labels, [
+      { label: 'Venituri', data: data.series.map(s => s.venituri), color: '#22c55e' },
+      { label: 'Cheltuieli', data: data.series.map(s => s.cheltuieli), color: '#ef4444' },
+    ]);
+
+    renderLineChart('chartProfit', labels, { label: 'Profit', data: data.series.map(s => s.profit), color: '#3b5fe0' });
+
+    renderHBarChart('chartBS', data.bs_breakdown.map(b => ({ label: b.categorie, value: b.valoare })));
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,3 @@
+date/
+*.csv
+__pycache__/
